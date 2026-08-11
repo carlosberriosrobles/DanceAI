@@ -1,5 +1,7 @@
 package cl.danceai.view;
 
+import cl.danceai.audio.AudioCapture;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,7 +11,11 @@ public class MainFrame extends JFrame {
     private JLabel lblEstado;
     private JProgressBar barraAudio;
 
+    private AudioCapture audioCapture;
+
     public MainFrame() {
+
+        audioCapture = new AudioCapture();
 
         setTitle("DanceAI");
 
@@ -53,7 +59,7 @@ public class MainFrame extends JFrame {
                 while (true) {
 
                     int nivel =
-                            (int) (Math.random() * 100);
+                            audioCapture.obtenerNivelAudio();
 
                     barraAudio.setValue(nivel);
 
