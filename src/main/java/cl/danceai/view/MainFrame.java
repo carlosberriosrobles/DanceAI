@@ -7,6 +7,8 @@ import cl.danceai.service.MoveGenerator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class MainFrame extends JFrame {
 
@@ -18,6 +20,8 @@ public class MainFrame extends JFrame {
     private JLabel lblBeat;
     private JLabel lblMovimiento;
     private JLabel lblFlecha;
+    private JLabel lblPuntaje;
+    private JLabel lblResultado;
 
     private JProgressBar barraAudio;
 
@@ -25,7 +29,11 @@ public class MainFrame extends JFrame {
     private BeatDetector beatDetector;
     private MoveGenerator moveGenerator;
 
+    private Move movimientoActual;
+
     private boolean microfonoActivo = false;
+
+    private int puntaje = 0;
 
     public MainFrame() {
 
@@ -34,9 +42,15 @@ public class MainFrame extends JFrame {
         moveGenerator = new MoveGenerator();
 
         setTitle("DanceAI");
-        setSize(800, 600);
+
+        //setUndecorated(true);
+
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         setLocationRelativeTo(null);
+
         setLayout(new FlowLayout());
 
         btnMicrofono = new JButton("Iniciar Micrófono");
@@ -46,13 +60,16 @@ public class MainFrame extends JFrame {
         lblNivel = new JLabel("Nivel: 0%");
         lblBeat = new JLabel("Beat: NO");
         lblMovimiento = new JLabel("Movimiento: -");
+        lblPuntaje = new JLabel("Puntaje: 0");
+        lblResultado = new JLabel("Esperando...");
+
 
         lblFlecha = new JLabel("-");
         lblFlecha.setFont(
                 new Font(
                         "Arial",
                         Font.BOLD,
-                        100
+                        120
                 )
         );
 
@@ -67,6 +84,8 @@ public class MainFrame extends JFrame {
         add(lblNivel);
         add(lblBeat);
         add(lblMovimiento);
+        add(lblPuntaje);
+        add(lblResultado);
 
         add(lblFlecha);
 
@@ -79,9 +98,25 @@ public class MainFrame extends JFrame {
         btnDetener.addActionListener(
                 e -> detenerMicrofono()
         );
+
+        addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                validarMovimiento(e);
+
+            }
+
+        });
+
+        setFocusable(true);
+
     }
 
     private void iniciarMicrofono() {
+
+        requestFocusInWindow();
 
         if (microfonoActivo) {
             return;
@@ -114,16 +149,16 @@ public class MainFrame extends JFrame {
                                 "Beat: SI"
                         );
 
-                        Move move =
+                        movimientoActual =
                                 moveGenerator.generarMovimiento();
 
                         lblMovimiento.setText(
                                 "Movimiento: "
-                                        + move.getDireccion()
+                                        + movimientoActual.getDireccion()
                         );
 
                         lblFlecha.setText(
-                                move.getDireccion()
+                                movimientoActual.getDireccion()
                         );
 
                     } else {
@@ -145,6 +180,62 @@ public class MainFrame extends JFrame {
             }
 
         }).start();
+
+    }
+
+    private void validarMovimiento(
+            KeyEvent e
+    ) {
+
+        if (movimientoActual == null) {
+            return;
+        }
+
+        String tecla = "";
+
+        switch (e.getKeyCode()) {
+
+            case KeyEvent.VK_LEFT:
+                tecla = "←";
+                break;
+
+            case KeyEvent.VK_RIGHT:
+                tecla = "→";
+                break;
+
+            case KeyEvent.VK_UP:
+                tecla = "↑";
+                break;
+
+            case KeyEvent.VK_DOWN:
+                tecla = "↓";
+                break;
+
+        }
+
+        if (tecla.equals(
+                movimientoActual.getDireccion()
+        )) {
+
+            puntaje += 100;
+
+            lblResultado.setText(
+                    "✅ CORRECTO"
+            );
+
+        } else {
+
+            puntaje -= 10;
+
+            lblResultado.setText(
+                    "❌ INCORRECTO"
+            );
+
+        }
+
+        lblPuntaje.setText(
+                "Puntaje: " + puntaje
+        );
 
     }
 
@@ -170,6 +261,12 @@ public class MainFrame extends JFrame {
 
         lblFlecha.setText(
                 "-"
+        );
+
+        puntaje = 0;
+
+        lblPuntaje.setText(
+                "Puntaje: 0"
         );
 
         barraAudio.setValue(0);
