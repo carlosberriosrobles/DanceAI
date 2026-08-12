@@ -2,6 +2,7 @@ package cl.danceai.view;
 
 import cl.danceai.audio.AudioCapture;
 import cl.danceai.model.Move;
+import cl.danceai.model.Score;
 import cl.danceai.service.BeatDetector;
 import cl.danceai.service.MoveGenerator;
 
@@ -20,8 +21,13 @@ public class MainFrame extends JFrame {
     private JLabel lblBeat;
     private JLabel lblMovimiento;
     private JLabel lblFlecha;
-    private JLabel lblPuntaje;
     private JLabel lblResultado;
+
+    private JLabel lblPuntaje;
+    private JLabel lblCombo;
+    private JLabel lblPrecision;
+    private JLabel lblAciertos;
+    private JLabel lblErrores;
 
     private JProgressBar barraAudio;
 
@@ -31,9 +37,9 @@ public class MainFrame extends JFrame {
 
     private Move movimientoActual;
 
-    private boolean microfonoActivo = false;
+    private Score score;
 
-    private int puntaje = 0;
+    private boolean microfonoActivo = false;
 
     public MainFrame() {
 
@@ -41,15 +47,13 @@ public class MainFrame extends JFrame {
         beatDetector = new BeatDetector();
         moveGenerator = new MoveGenerator();
 
-        setTitle("DanceAI");
+        score = new Score();
 
-        //setUndecorated(true);
+        setTitle("DanceAI");
 
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        setLocationRelativeTo(null);
 
         setLayout(new FlowLayout());
 
@@ -59,12 +63,19 @@ public class MainFrame extends JFrame {
         lblEstado = new JLabel("Estado: Desconectado");
         lblNivel = new JLabel("Nivel: 0%");
         lblBeat = new JLabel("Beat: NO");
-        lblMovimiento = new JLabel("Movimiento: -");
-        lblPuntaje = new JLabel("Puntaje: 0");
-        lblResultado = new JLabel("Esperando...");
 
+        lblMovimiento = new JLabel("Movimiento: -");
+
+        lblResultado = new JLabel("Esperando movimiento...");
+
+        lblPuntaje = new JLabel("Puntaje: 0");
+        lblCombo = new JLabel("Combo: 0");
+        lblPrecision = new JLabel("Precision: 0%");
+        lblAciertos = new JLabel("Aciertos: 0");
+        lblErrores = new JLabel("Errores: 0");
 
         lblFlecha = new JLabel("-");
+
         lblFlecha.setFont(
                 new Font(
                         "Arial",
@@ -74,7 +85,9 @@ public class MainFrame extends JFrame {
         );
 
         barraAudio = new JProgressBar(0, 100);
+
         barraAudio.setValue(0);
+
         barraAudio.setStringPainted(true);
 
         add(btnMicrofono);
@@ -83,9 +96,16 @@ public class MainFrame extends JFrame {
         add(lblEstado);
         add(lblNivel);
         add(lblBeat);
+
         add(lblMovimiento);
-        add(lblPuntaje);
+
         add(lblResultado);
+
+        add(lblPuntaje);
+        add(lblCombo);
+        add(lblPrecision);
+        add(lblAciertos);
+        add(lblErrores);
 
         add(lblFlecha);
 
@@ -169,7 +189,7 @@ public class MainFrame extends JFrame {
 
                     }
 
-                    Thread.sleep(200);
+                    Thread.sleep(300);
 
                 }
 
@@ -217,7 +237,7 @@ public class MainFrame extends JFrame {
                 movimientoActual.getDireccion()
         )) {
 
-            puntaje += 100;
+            score.registrarAcierto();
 
             lblResultado.setText(
                     "✅ CORRECTO"
@@ -225,7 +245,7 @@ public class MainFrame extends JFrame {
 
         } else {
 
-            puntaje -= 10;
+            score.registrarError();
 
             lblResultado.setText(
                     "❌ INCORRECTO"
@@ -233,8 +253,37 @@ public class MainFrame extends JFrame {
 
         }
 
+        actualizarEstadisticas();
+
+    }
+
+    private void actualizarEstadisticas() {
+
         lblPuntaje.setText(
-                "Puntaje: " + puntaje
+                "Puntaje: "
+                        + score.getPuntos()
+        );
+
+        lblCombo.setText(
+                "Combo: "
+                        + score.getCombo()
+        );
+
+        lblPrecision.setText(
+                String.format(
+                        "Precision: %.2f%%",
+                        score.getPrecision()
+                )
+        );
+
+        lblAciertos.setText(
+                "Aciertos: "
+                        + score.getAciertos()
+        );
+
+        lblErrores.setText(
+                "Errores: "
+                        + score.getErrores()
         );
 
     }
@@ -259,14 +308,12 @@ public class MainFrame extends JFrame {
                 "Movimiento: -"
         );
 
-        lblFlecha.setText(
-                "-"
+        lblResultado.setText(
+                "Esperando movimiento..."
         );
 
-        puntaje = 0;
-
-        lblPuntaje.setText(
-                "Puntaje: 0"
+        lblFlecha.setText(
+                "-"
         );
 
         barraAudio.setValue(0);
