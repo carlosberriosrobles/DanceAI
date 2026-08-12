@@ -5,6 +5,7 @@ import cl.danceai.model.Move;
 import cl.danceai.model.Score;
 import cl.danceai.service.BeatDetector;
 import cl.danceai.service.MoveGenerator;
+import cl.danceai.view.AvatarPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +13,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class MainFrame extends JFrame {
+
+    private AvatarPanel avatarPanel;
 
     private JButton btnMicrofono;
     private JButton btnDetener;
@@ -41,6 +44,8 @@ public class MainFrame extends JFrame {
 
     private boolean microfonoActivo = false;
 
+
+
     public MainFrame() {
 
         audioCapture = new AudioCapture();
@@ -55,7 +60,7 @@ public class MainFrame extends JFrame {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setLayout(new FlowLayout());
+        setLayout(new BorderLayout());
 
         btnMicrofono = new JButton("Iniciar Micrófono");
         btnDetener = new JButton("Detener");
@@ -74,7 +79,7 @@ public class MainFrame extends JFrame {
         lblAciertos = new JLabel("Aciertos: 0");
         lblErrores = new JLabel("Errores: 0");
 
-        lblFlecha = new JLabel("-");
+        lblFlecha = new JLabel("-", SwingConstants.CENTER);
 
         lblFlecha.setFont(
                 new Font(
@@ -84,32 +89,70 @@ public class MainFrame extends JFrame {
                 )
         );
 
+        avatarPanel = new AvatarPanel();
+
+        avatarPanel.setPreferredSize(
+                new Dimension(
+                        500,
+                        350
+                )
+        );
+
         barraAudio = new JProgressBar(0, 100);
 
         barraAudio.setValue(0);
 
         barraAudio.setStringPainted(true);
 
-        add(btnMicrofono);
-        add(btnDetener);
+        JPanel panelSuperior = new JPanel();
 
-        add(lblEstado);
-        add(lblNivel);
-        add(lblBeat);
+        panelSuperior.add(lblPuntaje);
+        panelSuperior.add(lblCombo);
+        panelSuperior.add(lblPrecision);
+        panelSuperior.add(lblAciertos);
+        panelSuperior.add(lblErrores);
 
-        add(lblMovimiento);
+        JPanel panelCentro = new JPanel(
+                new BorderLayout()
+        );
 
-        add(lblResultado);
+        panelCentro.add(
+                avatarPanel,
+                BorderLayout.CENTER
+        );
 
-        add(lblPuntaje);
-        add(lblCombo);
-        add(lblPrecision);
-        add(lblAciertos);
-        add(lblErrores);
+        panelCentro.add(
+                lblFlecha,
+                BorderLayout.SOUTH
+        );
 
-        add(lblFlecha);
+        JPanel panelInferior = new JPanel();
 
-        add(barraAudio);
+        panelInferior.add(btnMicrofono);
+        panelInferior.add(btnDetener);
+
+        panelInferior.add(lblEstado);
+        panelInferior.add(lblNivel);
+        panelInferior.add(lblBeat);
+
+        panelInferior.add(barraAudio);
+
+        panelInferior.add(lblResultado);
+
+        add(
+                panelSuperior,
+                BorderLayout.NORTH
+        );
+
+        add(
+                panelCentro,
+                BorderLayout.CENTER
+        );
+
+        add(
+                panelInferior,
+                BorderLayout.SOUTH
+        );
 
         btnMicrofono.addActionListener(
                 e -> iniciarMicrofono()
@@ -178,6 +221,9 @@ public class MainFrame extends JFrame {
                         );
 
                         lblFlecha.setText(
+                                movimientoActual.getDireccion()
+                        );
+                        avatarPanel.setMovimiento(
                                 movimientoActual.getDireccion()
                         );
 
